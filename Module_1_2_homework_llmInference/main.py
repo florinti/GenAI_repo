@@ -11,7 +11,6 @@ from dotenv import load_dotenv
 load_dotenv()
 # Configure Gemini API with API key from environment variable
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
-print("🔑 GOOGLE_API_KEY:", os.getenv("GOOGLE_API_KEY"))
 
 print("🔍 Available models:")
 models = genai.list_models()
@@ -24,11 +23,8 @@ def list_available_models():
         print(model.name, model.supported_generation_methods)
 
 
-
-
 # FastAPI application instance
 app = FastAPI()
-
 
 
 # Ollama API setup
@@ -36,6 +32,7 @@ OLLAMA_URL = "http://localhost:11434/api/generate"  # Ollama default URL
 
 class PromptRequest(BaseModel):
     prompt: str
+
 
 @app.post("/generate")
 async def generate_responses(request: PromptRequest):
@@ -45,8 +42,6 @@ async def generate_responses(request: PromptRequest):
     start_gemini = time.time()
     gemini_response = get_gemini_response(prompt)
     gemini_time = time.time() - start_gemini
-
-
 
     # Measure time for Ollama response
     start_ollama = time.time()
