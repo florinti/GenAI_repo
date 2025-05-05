@@ -41,7 +41,11 @@ Embedding similarity is used to retrieve the most relevant prior topic for conte
 Both long-term and short-term memory are explicitly injected into the prompt.
 
 
-Example:
+
+
+
+
+**Example:**
 
 {
   "query": "Is Australia's politics influenced by Trump?",
