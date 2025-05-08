@@ -27,7 +27,6 @@ async def handle_query(req: QueryRequest):
     selected = sorted(selected, key=lambda x: x[1], reverse=True)[:req.top_k]
 
     history = load_history()
-    best_topic = best_query = best_answer = ""
     long_term_memory = {}
     last = history['topics'][-1] if history['topics'] else None
 
@@ -38,23 +37,23 @@ async def handle_query(req: QueryRequest):
         best_idx = int(sim_scores.argmax())
         if sim_scores[best_idx] >= config.TOPIC_SIM_THRESHOLD:
             entry = history['topics'][best_idx]
-            best_topic, best_query, best_answer = entry.values()
             long_term_memory = entry
 
     retrieved_texts = [c['text'] for c, _ in selected]
     prompt_lines = [
         f"The user query is: {req.query}.",
-        "Answer the user's question only based on the context below."
+        "Answer the user's question using the context below."
     ]
-    if best_topic:
-        prompt_lines.append(f"Previous topic: {best_topic}\nQ: {best_query}\nA: {best_answer}")
+
     if history['topics']:
-        prompt_lines.append(f"Short-term memory: Q: {last['query']} A: {last['answer']}")
+        prompt_lines.append(f"Short-term memory for follow-up questions (Q is not the current turn's user query but the previously answered yser query): Q: {last['query']} A: {last['answer']}")
     if long_term_memory:
-        prompt_lines.append(f"Long-term memory: {json.dumps(long_term_memory, indent=2)}")
+        prompt_lines.append(f"Long-term memory for previous discussed topics: {json.dumps(long_term_memory, indent=2)}")
     prompt_lines.append("\nChunks:\n" + "\n".join(retrieved_texts))
+    
 
     full_prompt = "\n".join(prompt_lines)
+    print(prompt_lines)
     raw_ans = tool.chat(model=config.LLAMA_MODEL, messages=[{"role": "user", "content": full_prompt}]).get("message", {}).get("content", "")
     answer = clean_text(raw_ans)
 
@@ -75,7 +74,6 @@ async def handle_query(req: QueryRequest):
     return QueryResponse(
         answer=answer,
         relevant_chunks=reranked_chunks,
-        used_prompt={"user_query": req.query, "retrieved_chunks": retrieved_texts},
         short_term_memory=f"Q: {last['query']} A: {last['answer']}" if last else "",
         long_term_memory=long_term_memory
     )
