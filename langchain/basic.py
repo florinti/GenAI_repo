@@ -136,7 +136,7 @@ llm = OllamaLLM(
 
 # Calls a weather API to get current temperature and description for a city.
 def get_weather(city: str) -> str:
-    API_KEY = "db8f84ffcf49fd29e751f96ae2b73881"
+    API_KEY = "my_key"
     url = f"https://api.openweathermap.org/data/2.5/weather?q={city}&units=metric&appid={API_KEY}"
     try:
         response = requests.get(url)
